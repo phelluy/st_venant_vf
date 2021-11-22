@@ -361,7 +361,7 @@ fn main() -> Result<(), Error> {
             let h = w[0];
             writeln!(meshfile, "{} {} {} {} {}", xi[i], h, hex, u, uex)?;
         }
-    }
+    } // ensures that the file is closed...
 
     use std::process::Command;
 
