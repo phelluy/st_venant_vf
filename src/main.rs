@@ -130,9 +130,9 @@ fn riemann(wl: [f64; M], wr: [f64; M], xi: f64) -> [f64; M] {
 // }
 
 fn sol_exacte(x: f64, t: f64) -> [f64; M] {
-    let hl = 2.;
+    let hl = 1.;
     let ul = 0.;
-    let hr = 1.;
+    let hr = 2.;
     let ur = 0.;
 
     let wl = [hl, hl * ul];
