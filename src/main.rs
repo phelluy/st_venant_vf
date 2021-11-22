@@ -348,27 +348,27 @@ fn main() -> Result<(), Error> {
     }
 
     println!("Ok, {} iterations, final t ={}", iter_count, t);
+    {
+        let meshfile = File::create("trans.dat")?;
+        let mut meshfile = BufWriter::new(meshfile); // create a buffer for faster writes...
 
-    let meshfile = File::create("trans.dat")?;
-    let mut meshfile = BufWriter::new(meshfile); // create a buffer for faster writes...
-
-    for i in 0..nx + 2 {
-        let wex = sol_exacte(xi[i], t);
-        let w = wn[i];
-        let uex = wex[1] / wex[0];
-        let u = w[1] / w[0];
-        let hex = wex[0];
-        let h = w[0];
-        writeln!(meshfile, "{} {} {} {} {}", xi[i], h, hex, u, uex)?;
+        for i in 0..nx + 2 {
+            let wex = sol_exacte(xi[i], t);
+            let w = wn[i];
+            let uex = wex[1] / wex[0];
+            let u = w[1] / w[0];
+            let hex = wex[0];
+            let h = w[0];
+            writeln!(meshfile, "{} {} {} {} {}", xi[i], h, hex, u, uex)?;
+        }
     }
 
     use std::process::Command;
 
     Command::new("gnuplot")
-    .arg("plotcom")
-    .status()
-    .expect("plot failed !");
-
+        .arg("plotcom")
+        .status()
+        .expect("plot failed !");
 
     Ok(())
 }
