@@ -1,15 +1,18 @@
 // time RAYON_NUM_THREADS=8 cargo run --release
 
+
+// file utilities
 use std::fs::File;
 use std::io::BufWriter;
 use std::io::{Error, Write};
 
+// parallel iterators
 use rayon::prelude::*;
 
 // majorant de la vitesse d'onde max
 const C: f64 = 5.;
 
-// st venant
+// st venant: nombre de variables
 const M: usize = 2;
 // burgers
 //const M: usize = 1;
@@ -50,6 +53,7 @@ fn dk(hl: f64, hr: f64, h: f64) -> f64 {
     -z(hl, h) - (h - hl) * dz(hl, h) - z(hr, h) - (h - hr) * dz(hr, h)
 }
 
+// riemann solver
 fn riemann(wl: [f64; M], wr: [f64; M], xi: f64) -> [f64; M] {
     let hl = wl[0];
     let ul = wl[1] / hl;
@@ -176,6 +180,8 @@ fn fluxphy(w: [f64; M]) -> [f64; M] {
     [h * u, h * u * u + G * h * h / 2.]
 }
 
+// estimate of the time derivative from the space derivative
+// d_t w = -f'(w) d_x w
 fn jacob_dw(w: [f64; M], dw: [f64; M]) -> [f64; M] {
     let h = w[0];
     let u = w[1] / w[0];
@@ -228,13 +234,16 @@ fn main() -> Result<(), Error> {
 
     println!("nx={} xmin={} xmax={} dx={}", nx, XMIN, XMAX, dx);
 
+    // vector of cell centers
     let xi: Vec<f64> = (0..nx + 2)
         .map(|i| i as f64 * dx - dx / 2. + XMIN)
         .collect();
 
+    // vector of solution at time n and n+1
     let mut wn: Vec<[f64; M]> = xi.iter().map(|x| sol_exacte(*x, 0.)).collect();
     let mut wnp1: Vec<[f64; M]> = wn.clone();
 
+    // MUSCL space and time slopes
     let mut sn = vec![[0., 0.]; nx + 2];
     let mut rn = vec![[0., 0.]; nx + 2];
 
@@ -249,6 +258,9 @@ fn main() -> Result<(), Error> {
 
     while t < tmax {
         // calcul des pentes
+        // construction d'un itérateur parallèle regroupant les vecteurs
+        // wn , wn décalé à gauche, wn décalé à droite,
+        // et les pentes en espace et en temps.
         let iterslope = wn
             .par_iter()
             .skip(1)
@@ -261,6 +273,7 @@ fn main() -> Result<(), Error> {
                     .zip(rn.par_iter_mut().skip(1).take(nx)),
             );
 
+        // exécution de la boucle parallèle
         iterslope.for_each(|((w, (wm, wp)), (s, r))| {
             for k in 0..M {
                 let a = (w[k] - wm[k]) / dx;
@@ -273,6 +286,9 @@ fn main() -> Result<(), Error> {
             *r = jacob_dw(*w, *s);
         });
 
+
+        // construction d'un itérateur imbriqué balayant tous
+        // les vecteurs nécessaires
         let w = wn.par_iter().skip(1).take(nx);
         let s = sn.par_iter().skip(1).take(nx);
         let r = rn.par_iter().skip(1).take(nx);
@@ -300,6 +316,12 @@ fn main() -> Result<(), Error> {
         //         wp[k] = w[k] - dt / dx * C * (w[k] - wd[k]);
         //     }
         // }
+        // exécution de la boucle parallèle
+        // wnext: w au temps n+1
+        // w , s ,r : w et les pentes au temps n
+        // wm, sm, rm : idem mais décalé à gauche
+        // wp, sp, rp : idem mais décalé à droite
+        // en rust, |x| {f(x)} veut dire "la fonction qui à x associe f(x)"
         iter.for_each(|(wnext, ((w, (s, r)), ((wm, (sm, rm)), (wp, (sp, rp)))))| {
             // méthode MUSCL
             // flux à droite
@@ -336,12 +358,14 @@ fn main() -> Result<(), Error> {
         //}
         t += dt;
         iter_count += 1;
+        // conditions aux limites
         wnp1[0] = sol_exacte(xi[0], t);
         wnp1[nx + 1] = sol_exacte(xi[nx + 1], t);
 
         // for (wn, wnp1) in wn.iter_mut().zip(wnp1.iter()) {
         //     *wn = *wnp1;
         // }
+        // mise à jour
         wn.par_iter_mut()
             .zip(wnp1.par_iter())
             .for_each(|(wn, wnp1)| *wn = *wnp1);
