@@ -1,6 +1,5 @@
 // time RAYON_NUM_THREADS=8 cargo run --release
 
-
 // file utilities
 use std::fs::File;
 use std::io::BufWriter;
@@ -134,10 +133,13 @@ fn riemann(wl: [f64; M], wr: [f64; M], xi: f64) -> [f64; M] {
 // }
 
 fn sol_exacte(x: f64, t: f64) -> [f64; M] {
-    let hl = 1.;
+    let hl = 2.;
     let ul = 0.;
-    let hr = 2.;
-    let ur = 0.;
+    let hr = 0.5;
+
+    let sqrt = f64::sqrt;
+
+    let ur = ul + 2. * sqrt(G) * (sqrt(hl) - sqrt(hr));
 
     let wl = [hl, hl * ul];
     let wr = [hr, hr * ur];
@@ -199,8 +201,10 @@ fn jacob_dw(w: [f64; M], dw: [f64; M]) -> [f64; M] {
 }
 
 fn fluxnum(wl: [f64; M], wr: [f64; M]) -> [f64; M] {
-    let w = riemann(wl, wr, 0.);
-    fluxphy(w)
+    // godunov
+    // let w = riemann(wl, wr, 0.);
+    // fluxphy(w)
+    // rusanov
     // let hl = wl[0];
     // let hr = wr[0];
     // let ul = wl[1] / hl;
@@ -215,6 +219,31 @@ fn fluxnum(wl: [f64; M], wr: [f64; M]) -> [f64; M] {
     //     flux[i] = 0.5 * (fl[i] + fr[i]) - 0.5 * lambda * (wr[i] - wl[i]);
     // }
     // flux
+
+    // vfroe
+    let hl = wl[0];
+    let hr = wr[0];
+    let ul = wl[1] / hl;
+    let ur = wr[1] / hr;
+
+    let hb = (hl + hr) / 2.;
+    let ub = (ul + ur) / 2.;
+
+    let cb = (G * hb).sqrt();
+
+    let lambda1 = ub - cb;
+    let lambda2 = ub + cb;
+
+    let ws = if lambda1 <= 0. && lambda2 <= 0. {
+        wr
+    } else if lambda1 >= 0. && lambda2 >= 0. {
+        wl
+    } else {
+        let hs = hb - 0.5 / cb * hb * (ur - ul);
+        let us = ub - 0.5 / cb * G * (hr - hl);
+        [hs, hs * us]
+    };
+    fluxphy(ws)
 }
 
 fn minmod(a: f64, b: f64, c: f64) -> f64 {
@@ -228,7 +257,7 @@ fn minmod(a: f64, b: f64, c: f64) -> f64 {
 }
 
 fn main() -> Result<(), Error> {
-    let nx = 1000;
+    let nx = 4000;
 
     let dx = (XMAX - XMIN) / nx as f64;
 
@@ -285,7 +314,6 @@ fn main() -> Result<(), Error> {
             }
             *r = jacob_dw(*w, *s);
         });
-
 
         // construction d'un itérateur imbriqué balayant tous
         // les vecteurs nécessaires
@@ -387,12 +415,12 @@ fn main() -> Result<(), Error> {
         }
     } // ensures that the file is closed...
 
-    use std::process::Command;
+    // use std::process::Command;
 
-    Command::new("gnuplot")
-        .arg("plotcom")
-        .status()
-        .expect("plot failed !");
+    // Command::new("gnuplot")
+    //     .arg("plotcom")
+    //     .status()
+    //     .expect("plot failed !");
 
     Ok(())
 }
