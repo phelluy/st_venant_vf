@@ -415,12 +415,12 @@ fn main() -> Result<(), Error> {
         }
     } // ensures that the file is closed...
 
-    // use std::process::Command;
+    use std::process::Command;
 
-    // Command::new("gnuplot")
-    //     .arg("plotcom")
-    //     .status()
-    //     .expect("plot failed !");
+    Command::new("gnuplot")
+        .arg("plotcom")
+        .status()
+        .expect("plot failed !");
 
     Ok(())
 }
