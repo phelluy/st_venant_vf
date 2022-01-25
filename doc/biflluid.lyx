@@ -183,7 +183,11 @@ It also admits, for smooth solutions, the non-conservative form
 
 \end_inset
 
-with
+where the system in primitive variables 
+\begin_inset Formula $y$
+\end_inset
+
+ is defined by
 \begin_inset Formula 
 \[
 y=\left(\begin{array}{c}
@@ -246,6 +250,23 @@ c\\
 \end_inset
 
 The system is thus hyperbolic.
+ The fields 
+\begin_inset Formula $2$
+\end_inset
+
+ and 
+\begin_inset Formula $3$
+\end_inset
+
+ are linearly degenerated (LD) while the fields 
+\begin_inset Formula $1$
+\end_inset
+
+ and 
+\begin_inset Formula $4$
+\end_inset
+
+ are truly nonlinear (VNL).
 \end_layout
 
 \begin_layout Section
@@ -302,6 +323,296 @@ R_{3}^{1}=\rho,\quad R_{3}^{2}=u,\quad R_{3}^{3}=v.
 \begin_inset Formula 
 \[
 R_{4}^{1}=u-c\ln\rho,\quad R_{4}^{2}=p-c^{2}\rho,\quad R_{4}^{3}=v.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Jump conditions
+\end_layout
+
+\begin_layout Standard
+We denote by 
+\begin_inset Formula $w_{0}$
+\end_inset
+
+ and 
+\begin_inset Formula $w_{1}$
+\end_inset
+
+ the values on the two sides of the jump, by 
+\begin_inset Formula $[w]=w_{1}-w_{0}$
+\end_inset
+
+ the jump and by 
+\begin_inset Formula $\sigma$
+\end_inset
+
+ the velocity of the discontinuity.
+ We have the Rankine-Hugoniot conditions
+\begin_inset Formula 
+\[
+\sigma[w]=[f(w)].
+\]
+
+\end_inset
+
+They read
+\begin_inset Formula 
+\begin{align*}
+[\rho(u-\sigma)] & =0,\\{}
+[\rho u(u-\sigma)+p] & =0,\\{}
+[\rho(u-\sigma)v] & =0,\\{}
+[\rho(u-\sigma)\varphi] & =0.
+\end{align*}
+
+\end_inset
+
+We introduce 
+\begin_inset Formula 
+\[
+j=\rho(\sigma-u),
+\]
+
+\end_inset
+
+which is a jump invariant (like 
+\begin_inset Formula $\sigma$
+\end_inset
+
+).
+ We get
+\begin_inset Formula 
+\begin{align*}
+[-ju+p] & =0,\\{}
+[jv] & =0,\\{}
+[j\varphi] & =0.
+\end{align*}
+
+\end_inset
+
+When 
+\begin_inset Formula $\sigma=u$
+\end_inset
+
+, we consider the jump in the LD fields.
+ Because 
+\begin_inset Formula $u$
+\end_inset
+
+ is Riemann invariant for these two LD fields, we deduce that it is constant
+ across the jump.
+ In addition, the first equation above indicates that 
+\begin_inset Formula $p$
+\end_inset
+
+ is also constant across the jump.
+ 
+\end_layout
+
+\begin_layout Standard
+We consider then 
+\begin_inset Formula $j\neq0$
+\end_inset
+
+.
+ This case corresponds to a 1-shock or a 4-shock.
+ In a shock we see that 
+\begin_inset Formula $v$
+\end_inset
+
+ and 
+\begin_inset Formula $\varphi$
+\end_inset
+
+ are continuous.
+ This implies that
+\begin_inset Formula 
+\[
+[p]=c^{2}[\rho].
+\]
+
+\end_inset
+
+In addition
+\begin_inset Formula 
+\[
+\sigma=u+\frac{j}{\rho},
+\]
+
+\end_inset
+
+which implies that
+\begin_inset Formula 
+\[
+[u]=-j[1/\rho]=\frac{j}{\rho_{0}\rho_{1}}[\rho].
+\]
+
+\end_inset
+
+Combined with the first jump condition, we obtain
+\begin_inset Formula 
+\[
+\frac{j^{2}}{\rho_{0}\rho_{1}}[\rho]=c^{2}[\rho].
+\]
+
+\end_inset
+
+For a true discontinuity (when 
+\begin_inset Formula $[\rho]\neq0$
+\end_inset
+
+) we conclude that
+\begin_inset Formula 
+\[
+j^{2}=c^{2}\rho_{0}\rho_{1}.
+\]
+
+\end_inset
+
+Thus 
+\begin_inset Formula 
+\[
+j=\varepsilon c\sqrt{\rho_{0}\rho_{1}},\quad\varepsilon=\pm1.
+\]
+
+\end_inset
+
+Then 
+\begin_inset Formula 
+\[
+\sigma=u_{1}+\varepsilon c\sqrt{\rho_{0}/\rho_{1}}=u_{0}+\varepsilon c\sqrt{\rho_{1}/\rho_{0}}.
+\]
+
+\end_inset
+
+For a shock of small amplitude 
+\begin_inset Formula $u_{1}\simeq u_{0}\simeq u$
+\end_inset
+
+, 
+\begin_inset Formula $\rho_{1}\simeq\rho_{0}\simeq\rho$
+\end_inset
+
+, we expect that 
+\begin_inset Formula $\sigma\simeq u-c$
+\end_inset
+
+ for a 
+\begin_inset Formula $1-$
+\end_inset
+
+shock and 
+\begin_inset Formula $\sigma\simeq u+c$
+\end_inset
+
+ for a 
+\begin_inset Formula $4-$
+\end_inset
+
+shock this implies that
+\begin_inset Formula 
+\[
+\varepsilon=-1,\text{ for a 1-shock},\quad\varepsilon=1,\text{ for a 4-shock.}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Practical resolution of the Riemann problem
+\end_layout
+
+\begin_layout Standard
+We consider the Riemann problem
+\begin_inset Formula 
+\begin{align*}
+\partial_{t}w+\partial_{x}f(w) & =0,\\
+w(x,0) & =\begin{cases}
+w_{L} & \text{if }x<0,\\
+w_{R} & \text{otherwise.}
+\end{cases}
+\end{align*}
+
+\end_inset
+
+Introducing the velocities 
+\begin_inset Formula $\lambda_{1}^{-}\leq\lambda_{1}^{+}<u^{*}<\lambda_{4}^{-}\leq\lambda_{4}^{+}$
+\end_inset
+
+, the solution is of the form
+\begin_inset Formula 
+\[
+w(x,t)=v(\xi),\quad\xi=x/t.
+\]
+
+\end_inset
+
+If 
+\begin_inset Formula $\lambda_{1}^{-}<\lambda_{1}^{+}$
+\end_inset
+
+ the 1-wave is a simple wave and if 
+\begin_inset Formula $\lambda_{1}^{-}=\lambda_{1}^{+}=\sigma_{1}$
+\end_inset
+
+, the 1-wave is a shock wave.
+ Similarly, if 
+\begin_inset Formula $\lambda_{4}^{-}<\lambda_{4}^{+}$
+\end_inset
+
+ the 4-wave is a simple wave and if 
+\begin_inset Formula $\lambda_{4}^{-}=\lambda_{4}^{+}=\sigma_{4}$
+\end_inset
+
+, the 1-wave is a shock wave
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+v(\xi)=\begin{cases}
+w_{L} & \text{if }\xi<\lambda_{1}^{-},\\
+w_{a} & \text{if }\lambda_{1}^{+}<\xi<u^{*},\\
+w_{b} & \text{if }u^{*}<\xi<\lambda_{4}^{-},\\
+w_{R} & \text{if }\xi>\lambda_{4}^{+}.
+\end{cases}
+\]
+
+\end_inset
+
+The last cases 
+\begin_inset Formula $\lambda_{1}^{-}<\xi<\lambda_{1}^{+}$
+\end_inset
+
+ and 
+\begin_inset Formula $\lambda_{4}^{-}<\xi<\lambda_{4}^{+}$
+\end_inset
+
+ are treated below.
+\end_layout
+
+\begin_layout Standard
+From the jump conditions of the LD fields, we deduce that the intermediate
+ states (a) and (b), in primitive variables, are of the form
+\begin_inset Formula 
+\[
+y_{a}=\left(\begin{array}{c}
+\rho_{a}\\
+u^{*}\\
+v_{L}\\
+p^{*}
+\end{array}\right),\quad y_{b}=\left(\begin{array}{c}
+\rho_{b}\\
+u^{*}\\
+v_{R}\\
+p^{*}
+\end{array}\right).
 \]
 
 \end_inset
