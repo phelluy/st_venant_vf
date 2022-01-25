@@ -269,6 +269,56 @@ The system is thus hyperbolic.
  are truly nonlinear (VNL).
 \end_layout
 
+\begin_layout Standard
+The system can also be written in another set of primitive variables
+\begin_inset Formula 
+\[
+\partial_{t}z+C(z)\partial_{x}z=0,
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+z=\left(\begin{array}{c}
+p\\
+u\\
+\varphi\\
+v
+\end{array}\right),\quad C(z)=\left(\begin{array}{cccc}
+u & c^{2}\rho & 0 & 0\\
+1/\rho & u\\
+ &  & u\\
+ &  &  & u
+\end{array}\right),
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula 
+\[
+\rho=\rho(p,\varphi)=\frac{p}{c^{2}}+\varphi\rho_{A}+(1-\varphi)\rho_{W}.
+\]
+
+\end_inset
+
+Because 
+\begin_inset Formula $\rho\geq0$
+\end_inset
+
+ the minimal pressure is given by
+\begin_inset Formula 
+\[
+p\geq-c^{2}\left(\varphi\rho_{A}+(1-\varphi)\rho_{W}\right).
+\]
+
+\end_inset
+
+ 
+\end_layout
+
 \begin_layout Section
 Riemann problem
 \end_layout
@@ -614,6 +664,133 @@ v_{R}\\
 p^{*}
 \end{array}\right).
 \]
+
+\end_inset
+
+If the 1-field is a 1-wave, we have
+\begin_inset Formula 
+\[
+u_{L}+c\ln\rho_{L}=u^{*}+c\ln\rho_{a}
+\]
+
+\end_inset
+
+thus
+\begin_inset Formula 
+\[
+u^{*}=u_{L}+c(\rho_{L}-\rho_{a})\frac{\ln\rho_{L}-\ln\rho_{a}}{\rho_{L}-\rho_{a}}.
+\]
+
+\end_inset
+
+In addition, the Lax condition is satisfied if 
+\begin_inset Formula $\rho_{a}<\rho_{L}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+If the 1-field is a 1-shock, we have
+\begin_inset Formula 
+\[
+u_{L}-c\sqrt{\rho_{a}/\rho_{L}}=u^{*}-c\sqrt{\rho_{L}/\rho_{a}},
+\]
+
+\end_inset
+
+thus
+\begin_inset Formula 
+\begin{align*}
+u^{*} & =u_{L}+c(\sqrt{\rho_{L}/\rho_{a}}-\sqrt{\rho_{a}/\rho_{L}})\\
+ & =u_{L}+c\frac{\rho_{L}-\rho_{a}}{\sqrt{\rho_{a}\rho_{L}}}.
+\end{align*}
+
+\end_inset
+
+We set
+\begin_inset Formula 
+\[
+Z(\rho_{a},\rho_{L})=\begin{cases}
+c\frac{\ln\rho_{L}-\ln\rho_{a}}{\rho_{L}-\rho_{a}} & \text{if }\rho_{a}<\rho_{L},\\
+c\frac{1}{\sqrt{\rho_{a}\rho_{L}}} & \text{otherwise}.
+\end{cases}
+\]
+
+\end_inset
+
+With this notation, we have
+\begin_inset Formula 
+\[
+u^{*}=u_{L}+(\rho_{L}-\rho_{a})Z(\rho_{a},\rho_{L}).
+\]
+
+\end_inset
+
+Proceeding in an analog way for the 4-wave, we obtain
+\begin_inset Formula 
+\[
+u^{*}=u_{R}-(\rho_{R}-\rho_{b})Z(\rho_{b},\rho_{R}).
+\]
+
+\end_inset
+
+Solving the Riemann amounts to solve
+\begin_inset Formula 
+\[
+u_{R}-(\rho_{R}-\rho_{b})Z(\rho_{b},\rho_{R})-u_{L}-(\rho_{L}-\rho_{a})Z(\rho_{a},\rho_{L})=0.
+\]
+
+\end_inset
+
+We express 
+\begin_inset Formula $\rho_{a}$
+\end_inset
+
+ and 
+\begin_inset Formula $\rho_{b}$
+\end_inset
+
+ as function of 
+\begin_inset Formula $p^{*}$
+\end_inset
+
+ and 
+\begin_inset Formula $\varphi_{L}$
+\end_inset
+
+ or 
+\begin_inset Formula $\varphi_{R}$
+\end_inset
+
+.
+ We end up with an equation on 
+\begin_inset Formula $p^{*}$
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+u_{R}-\frac{p_{R}-p^{*}}{c^{2}}Z(\frac{p^{*}}{c^{2}}+\varphi_{R}\rho_{A}+(1-\varphi_{R})\rho_{W},\frac{p_{R}}{c^{2}}+\varphi_{R}\rho_{A}+(1-\varphi_{R})\rho_{W})\\
+-u_{L}-\frac{p_{L}-p^{*}}{c^{2}}Z(\frac{p^{*}}{c^{2}}+\varphi_{L}\rho_{A}+(1-\varphi_{L})\rho_{W},\frac{p_{L}}{c^{2}}+\varphi_{L}\rho_{A}+(1-\varphi_{L})\rho_{W}) & =0.
+\end{align*}
+
+\end_inset
+
+We simplify this equation by defining
+\begin_inset Formula 
+\[
+\rho_{L,R}^{0}=\varphi_{L,R}\rho_{A}+(1-\varphi_{L,R})\rho_{W},
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+u_{R}-\frac{p_{R}-p^{*}}{c^{2}}Z(\frac{p^{*}}{c^{2}}+\rho_{R}^{0},\frac{p_{R}}{c^{2}}+\rho_{R}^{0})\\
+-u_{L}-\frac{p_{L}-p^{*}}{c^{2}}Z(\frac{p^{*}}{c^{2}}+\rho_{L}^{0},\frac{p_{L}}{c^{2}}+\rho_{L}^{0}) & =0.
+\end{align*}
 
 \end_inset
 
