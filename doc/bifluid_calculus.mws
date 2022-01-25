@@ -185,6 +185,45 @@ OG6$F+I(_syslibGF%6#F&\"\"%" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0
 18 "taylor(Zp,r=r0,4);" }}{PARA 11 "" 1 "" {XPPMATH 20 "++,&I\"rG6\"\"
 \"\"I$r0|irG6#/I'_localG%*protectedGI-_n4939076992GF%!\"\"*$F'F-F&,$*$
 F'!\"##F-\"\"#F3,$*$F'!\"$#F&\"\"$F8-I\"OG6$F+I(_syslibGF%6#F&\"\"%" }
-}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 0 "" }}}}
-{MARK "0 0 0" 0 }{VIEWOPTS 1 1 0 1 1 1803 1 1 1 1 }{PAGENUMBERS 0 1 2
- 33 1 1 }
+}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 8 "restart:" }}}{EXCHG {PARA 0
+ "> " 0 "" {MPLTEXT 1 0 88 "#rA:=1.;rW:=1000.;c:=10.;uL:=0.01;uR:=0;ph
+iL:=0.;phiR:=1.;pL:=1e5;pR:=1e5;pmin:=-c^2*rA;" }{MPLTEXT 1 0 0 "" }}}
+{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 78 "#Z:=unapply(piecewise(ra<rL,
+c*(ln(rL)-ln(ra))/(rL-ra),c/sqrt(ra*rL)),(ra,rL));" }}}{EXCHG {PARA 0 
+"> " 0 "" {MPLTEXT 1 0 36 "#rf:=unapply(rA*phi+rW*(1-phi),phi);" }}}
+{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 65 "f:=uR-(pR-p)/c/c*Z(p/c^2+rf(
+phiR),pR/c^2+rf(phiR))-uL-(pL-p)/c/c*" }{MPLTEXT 1 0 33 "Z(p/c^2+rf(ph
+iL),pL/c^2+rf(phiL))" }{MPLTEXT 1 0 1 ";" }}{PARA 11 "" 1 "" {XPPMATH 
+20 ">I\"fG6\",*I#uRGF$\"\"\"*(,&I#pRGF$F'I\"pGF$!\"\"F'I\"cGF$!\"#-I\"
+ZGF$6$,&*&F+F'F-F.F'-I#rfGF$6#I%phiRGF$F',&*&F*F'F-F.F'F4F'F'F,I#uLGF$
+F,*(,&I#pLGF$F'F+F,F'F-F.-F06$,&F3F'-F56#I%phiLGF$F',&*&F=F'F-F.F'FAF'
+F'F," }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 38 "df:=diff(f,p);df:=s
+ubs(D[1](Z)=dZ,df);" }}{PARA 11 "" 1 "" {XPPMATH 20 ">I#dfG6\",**&I\"c
+GF$!\"#-I\"ZGF$6$,&*&I\"pGF$\"\"\"F'F(F/-I#rfGF$6#I%phiRGF$F/,&*&I#pRG
+F$F/F'F(F/F0F/F/F/*(,&F6F/F.!\"\"F/F'!\"%--&I\"DG6$%*protectedGI(_sysl
+ibGF$6#F/6#F*F+F/F9*&F'F(-F*6$,&F-F/-F16#I%phiLGF$F/,&*&I#pLGF$F/F'F(F
+/FHF/F/F/*(,&FMF/F.F9F/F'F:-F<FFF/F9" }}{PARA 11 "" 1 "" {XPPMATH 20 "
+>I#dfG6\",**&I\"cGF$!\"#-I\"ZGF$6$,&*&I\"pGF$\"\"\"F'F(F/-I#rfGF$6#I%p
+hiRGF$F/,&*&I#pRGF$F/F'F(F/F0F/F/F/*(,&F6F/F.!\"\"F/F'!\"%-I#dZGF$F+F/
+F9*&F'F(-F*6$,&F-F/-F16#I%phiLGF$F/,&*&I#pLGF$F/F'F(F/FAF/F/F/*(,&FFF/
+F.F9F/F'F:-F<F?F/F9" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 21 "with
+(CodeGeneration);" }}{PARA 11 "" 1 "" {XPPMATH 20 "73I\"CG6\"I'CSharpG
+F$I(FortranGF$I1IntermediateCodeGF$I%JavaGF$I+JavaScriptGF$I&JuliaGF$I
+3LanguageDefinitionGF$I'MatlabG6$%*protectedGI(_syslibGF$I&NamesGF$I%P
+erlGF$I'PythonGF-I\"RGF$I%SaveGF$I&SwiftGF$I*TranslateGF$I,VisualBasic
+GF$" }}}{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 6 "C(df);" }}{PARA 207 "
+" 1 "" {TEXT 211 0 "" }{HYPERLNK 211 "Warning, the function names \{Z,
+ dZ, rf\} are not recognized in the target language" 4 "http://www.map
+lesoft.com/support/help/errors/view.aspx?path=Warning,%20the%20functio
+n%20names%20%7BZ,%20dZ,%20rf%7D%20are%20not%20recognized%20in%20the%20
+target%20language" "" }{TEXT 211 0 "" }}{PARA 6 "" 1 "" {TEXT 212 256 
+"cg0 = pow(c, -0.2e1) * Z(p * pow(c, -0.2e1) + rf(phiR), pR * pow(c, -
+0.2e1) + rf(phiR)) - (pR - p) * pow(c, -0.4e1) * dZ(p * pow(c, -0.2e1)
+ + rf(phiR), pR * pow(c, -0.2e1) + rf(phiR)) + pow(c, -0.2e1) * Z(p * \+
+pow(c, -0.2e1) + rf(phiL), pL * pow(c, -0.2e1) " }{TEXT 212 108 "+ rf(
+phiL)) - (pL - p) * pow(c, -0.4e1) * dZ(p * pow(c, -0.2e1) + rf(phiL),
+ pL * pow(c, -0.2e1) + rf(phiL));" }}}{EXCHG {PARA 0 "> " 0 "" 
+{MPLTEXT 1 0 44 "#fsolve(f=0,p,50000.0..150000.0,fulldigits);" }}}
+{EXCHG {PARA 0 "> " 0 "" {MPLTEXT 1 0 0 "" }}}}
+{MARK "0 0 0" 0 }{VIEWOPTS 1 1 0 121 100 1803 1 1 1 1 }{PAGENUMBERS 0
+ 1 2 33 1 1 }
