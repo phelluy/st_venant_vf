@@ -132,9 +132,9 @@ fn prim2bal(y: [f64; 4]) -> [f64; 4] {
 
 fn bal2prim(w: [f64; 4]) -> [f64; 4] {
     let r = w[0];
-    let (u,v,phi) = (w[1]/r,w[2]/r,w[3]/r);
-    let p = pres(r,phi);
-    [p,u,v,phi]
+    let (u, v, phi) = (w[1] / r, w[2] / r, w[3] / r);
+    let p = pres(r, phi);
+    [p, u, v, phi]
 }
 
 fn z_isot(ra: f64, rb: f64) -> f64 {
@@ -433,7 +433,7 @@ fn minmod(a: f64, b: f64, c: f64) -> f64 {
 }
 
 fn main() -> Result<(), Error> {
-    let nx = 4000;
+    let nx = 10;
 
     let dx = (XMAX - XMIN) / nx as f64;
 
@@ -449,17 +449,27 @@ fn main() -> Result<(), Error> {
     let vr = 0.;
     let phir = 1.;
 
-    let sol = riemisot(
-        prim2bal([pl, ul, vl, phil]),
-        prim2bal([pr, ur, vr, phir]),
-        0.,
-    );
-    println!("sol={:?}", sol);
-    panic!();
     // vector of cell centers
     let xi: Vec<f64> = (0..nx + 2)
         .map(|i| i as f64 * dx - dx / 2. + XMIN)
         .collect();
+
+    let t = 1.;
+    let rplot: Vec<f64> = xi
+        .iter()
+        .map(|x| {
+            let sol = riemisot(
+                prim2bal([pl, ul, vl, phil]),
+                prim2bal([pr, ur, vr, phir]),
+                x / t,
+            );
+            sol[0]
+        })
+        .collect();
+
+    plot1d(&xi, &rplot);
+
+    panic!();
 
     // vector of solution at time n and n+1
     let mut wn: Vec<[f64; M]> = xi.iter().map(|x| sol_exacte(*x, 0.)).collect();
@@ -616,4 +626,22 @@ fn main() -> Result<(), Error> {
         .expect("plot failed !");
 
     Ok(())
+}
+
+fn plot1d(x: &Vec<f64>, y: &Vec<f64>) {
+    let filename = "ploplo.dat";
+    {
+        let meshfile = File::create(filename).unwrap();
+        let mut meshfile = BufWriter::new(meshfile); // create a buffer for faster writes...
+
+        x.iter().zip(y.iter()).for_each(|(x, y)| {
+            writeln!(meshfile, "{} {}", *x, *y).unwrap();
+        });
+    }
+
+    use std::process::Command;
+    Command::new("python3")
+        .arg("src/plot1d.py")
+        .status()
+        .expect("plot failed !");
 }
