@@ -251,38 +251,49 @@ fn riemisot(wl: [f64; 4], wr: [f64; 4], xi: f64) -> [f64; 4] {
             panic!();
         }
     }
-    //let sqrt = f64::sqrt;
+    let sqrt = f64::sqrt;
+    let ra = (ps - P0)/CSON/CSON + rphi(phil);
+    let rb = (ps - P0)/CSON/CSON + rphi(phir);
 
-    // let us = ul - (hs - hl) * z(hl, hs);
-    // let (lambda1m, lambda1p) = if hs < hl {
-    //     (ul - sqrt(G * hl), us - sqrt(G * hs))
-    // } else {
-    //     let j = -sqrt(G) * sqrt(hl * hs) * sqrt((hl + hs) / 2.);
-    //     (ul + j / hl, ul + j / hl)
-    // };
-    // let (lambda2m, lambda2p) = if hs < hr {
-    //     (us + sqrt(G * hs), ur + sqrt(G * hr))
-    // } else {
-    //     let j = sqrt(G) * sqrt(hr * hs) * sqrt((hr + hs) / 2.);
-    //     (ur + j / hr, ur + j / hr)
-    // };
-    // println!("lambda1m={} lambda1p={}", lambda1m, lambda1p);
-    // println!("lambda2m={} lambda2p={}", lambda2m, lambda2p);
-    // panic!();
-    // let (h, u) = if xi < lambda1m {
-    //     (hl, ul)
-    // } else if xi < lambda1p {
-    //     let u1 = (ul + 2. * sqrt(G * hl) + 2. * xi) / 3.;
-    //     ((u1 - xi) * (u1 - xi) / G, u1)
-    // } else if xi < lambda2m {
-    //     (hs, us)
-    // } else if xi < lambda2p {
-    //     let u2 = (ur - 2. * sqrt(G * hr) + 2. * xi) / 3.;
-    //     ((u2 - xi) * (u2 - xi) / G, u2)
-    // } else {
-    //     (hr, ur)
-    // };
-    [ps, ul, vl, phil]
+    let us = ul + (rl-ra) * z_isot(ra,rl);
+    //let us = ur - (rr-rb)*z_isot(rb,rr);
+    // println!("us={} usp={}",us,usp);
+    
+
+    let (lambda1m, lambda1p) = if ra < rl {
+        (ul - CSON, us - CSON)
+    } else {
+        let lambda = ul - CSON * sqrt(ra/rl);
+        (lambda, lambda)
+    };
+    // println!("lm={} lp={}",lambda1m,lambda1p);
+    let (lambda2m, lambda2p) = if rb < rr {
+        (us + CSON, ur + CSON)
+    } else {
+        let lambda = ur + CSON * sqrt(rb/rr);
+        (lambda, us/CSON*sqrt(rr/rb))
+    };
+    // println!("lm={} lp={}",lambda2m,lambda2p);
+
+
+    let (p, u,v,phi) = if xi < lambda1m {
+        (pl, ul,vl,phil)
+    } else if xi < lambda1p {
+        let u1 = xi + CSON;
+        let r1 = rl * ((ul-u1)/CSON).exp();
+         (pres(r1,phil), u1,vl,phil)
+    } else if xi < us {
+        (ps,us,vl,phil)
+    }else if xi < lambda2m {
+        (ps,us,vr,phir)
+    } else if xi < lambda2p {
+        let u2 = xi -CSON;
+        let r2 = rr*((u2-ur)/CSON).exp();
+        (pres(r2,phir),u2,vr,phir)
+    } else {
+        (pr,ur,vr,phir)
+    };
+    [p, u, v, phi]
 }
 
 // burgers
@@ -454,7 +465,7 @@ fn main() -> Result<(), Error> {
         .map(|i| i as f64 * dx - dx / 2. + XMIN)
         .collect();
 
-    let t = 1.;
+    let t = 0.5;
     let rplot: Vec<f64> = xi
         .iter()
         .map(|x| {
