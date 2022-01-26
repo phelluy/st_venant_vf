@@ -130,6 +130,13 @@ fn prim2bal(y: [f64; 4]) -> [f64; 4] {
     [r, r * u, r * v, r * phi]
 }
 
+fn bal2prim(w: [f64; 4]) -> [f64; 4] {
+    let r = w[0];
+    let (u,v,phi) = (w[1]/r,w[2]/r,w[3]/r);
+    let p = pres(r,phi);
+    [p,u,v,phi]
+}
+
 fn z_isot(ra: f64, rb: f64) -> f64 {
     let ln = f64::ln;
     let pow = f64::powf;
