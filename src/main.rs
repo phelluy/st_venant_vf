@@ -109,6 +109,175 @@ fn riemann(wl: [f64; M], wr: [f64; M], xi: f64) -> [f64; M] {
     [h, h * u]
 }
 
+const R_AIR: f64 = 1.;
+const R_WATER: f64 = 1000.;
+const CSON: f64 = 10.;
+const P0: f64 = 1e5;
+
+fn rphi(phi: f64) -> f64 {
+    phi * R_AIR + (1. - phi) * R_WATER
+}
+
+fn pres(r: f64, phi: f64) -> f64 {
+    P0 + CSON * CSON * (r - rphi(phi))
+}
+
+fn prim2bal(y: [f64; 4]) -> [f64; 4] {
+    let (p, u, v, phi) = (y[0], y[1], y[2], y[3]);
+
+    let r0 = rphi(phi);
+    let r = (p - P0) / CSON / CSON + r0;
+    [r, r * u, r * v, r * phi]
+}
+
+fn z_isot(ra: f64, rb: f64) -> f64 {
+    let ln = f64::ln;
+    let pow = f64::powf;
+
+    if ra < rb {
+        CSON * (ln(rb) - ln(ra)) / (rb - ra)
+    } else {
+        CSON * pow(ra * rb, -0.1e1 / 0.2e1)
+    }
+}
+
+fn dz_isot(ra: f64, rb: f64) -> f64 {
+    let ln = f64::ln;
+    let pow = f64::powf;
+
+    if ra < rb {
+        -CSON / ra / (rb - ra) + CSON * (ln(rb) - ln(ra)) * pow(rb - ra, -0.2e1)
+    } else {
+        -CSON * pow(ra * rb, -0.3e1 / 0.2e1) * rb / 0.2e1
+    }
+}
+
+fn f_isot(
+    pl: f64,
+    ul: f64,
+    _vl: f64,
+    phil: f64,
+    pr: f64,
+    ur: f64,
+    _vr: f64,
+    phir: f64,
+    p: f64,
+) -> f64 {
+    let pow = f64::powf;
+    ur - (pr - p)
+        * pow(CSON, -0.2e1)
+        * z_isot(
+            (p - P0) * pow(CSON, -0.2e1) + rphi(phir),
+            (pr - P0) * pow(CSON, -0.2e1) + rphi(phir),
+        )
+        - ul
+        - (pl - p)
+            * pow(CSON, -0.2e1)
+            * z_isot(
+                (p - P0) * pow(CSON, -0.2e1) + rphi(phil),
+                (pl - P0) * pow(CSON, -0.2e1) + rphi(phil),
+            )
+}
+
+fn df_isot(
+    pl: f64,
+    _ul: f64,
+    _vl: f64,
+    phil: f64,
+    pr: f64,
+    _ur: f64,
+    _vr: f64,
+    phir: f64,
+    p: f64,
+) -> f64 {
+    let pow = f64::powf;
+    let cson = CSON;
+    pow(cson, -0.2e1)
+        * z_isot(
+            (p - P0) * pow(cson, -0.2e1) + rphi(phir),
+            (pr - P0) * pow(cson, -0.2e1) + rphi(phir),
+        )
+        - (pr - p)
+            * pow(cson, -0.4e1)
+            * dz_isot(
+                (p - P0) * pow(cson, -0.2e1) + rphi(phir),
+                (pr - P0) * pow(cson, -0.2e1) + rphi(phir),
+            )
+        + pow(cson, -0.2e1)
+            * z_isot(
+                (p - P0) * pow(cson, -0.2e1) + rphi(phil),
+                (pl - P0) * pow(cson, -0.2e1) + rphi(phil),
+            )
+        - (pl - p)
+            * pow(cson, -0.4e1)
+            * dz_isot(
+                (p - P0) * pow(cson, -0.2e1) + rphi(phil),
+                (pl - P0) * pow(cson, -0.2e1) + rphi(phil),
+            )
+}
+
+// riemann solver isothermal model
+fn riemisot(wl: [f64; 4], wr: [f64; 4], xi: f64) -> [f64; 4] {
+    let rl = wl[0];
+    let ul = wl[1] / rl;
+    let vl = wl[2] / rl;
+    let phil = wl[3] / rl;
+    let pl = pres(rl, phil);
+
+    let rr = wr[0];
+    let ur = wr[1] / rr;
+    let vr = wr[2] / rr;
+    let phir = wr[3] / rr;
+    let pr = pres(rr, phir);
+
+    // méthode de Newton
+    let mut ps = pres(0.01, phil).max(pres(0.01, phir));
+    let mut dp: f64 = 1.;
+    let mut iter = 0;
+    while dp.abs() > 1e-10 {
+        let f = f_isot(pl, ul, vl, phil, pr, ur, vr, phir, ps);
+        let df = df_isot(pl, ul, vl, phil, pr, ur, vr, phir, ps);
+        dp = -f / df;
+        ps += dp;
+        iter += 1;
+        if iter > 20 {
+            panic!();
+        }
+    }
+    //let sqrt = f64::sqrt;
+
+    // let us = ul - (hs - hl) * z(hl, hs);
+    // let (lambda1m, lambda1p) = if hs < hl {
+    //     (ul - sqrt(G * hl), us - sqrt(G * hs))
+    // } else {
+    //     let j = -sqrt(G) * sqrt(hl * hs) * sqrt((hl + hs) / 2.);
+    //     (ul + j / hl, ul + j / hl)
+    // };
+    // let (lambda2m, lambda2p) = if hs < hr {
+    //     (us + sqrt(G * hs), ur + sqrt(G * hr))
+    // } else {
+    //     let j = sqrt(G) * sqrt(hr * hs) * sqrt((hr + hs) / 2.);
+    //     (ur + j / hr, ur + j / hr)
+    // };
+    // println!("lambda1m={} lambda1p={}", lambda1m, lambda1p);
+    // println!("lambda2m={} lambda2p={}", lambda2m, lambda2p);
+    // panic!();
+    // let (h, u) = if xi < lambda1m {
+    //     (hl, ul)
+    // } else if xi < lambda1p {
+    //     let u1 = (ul + 2. * sqrt(G * hl) + 2. * xi) / 3.;
+    //     ((u1 - xi) * (u1 - xi) / G, u1)
+    // } else if xi < lambda2m {
+    //     (hs, us)
+    // } else if xi < lambda2p {
+    //     let u2 = (ur - 2. * sqrt(G * hr) + 2. * xi) / 3.;
+    //     ((u2 - xi) * (u2 - xi) / G, u2)
+    // } else {
+    //     (hr, ur)
+    // };
+    [ps, ul, vl, phil]
+}
+
 // burgers
 // fn riemann(ul: [f64; M], ur: [f64; M], xi: f64) -> [f64; M] {
 //     let ul = ul[0];
@@ -263,6 +432,23 @@ fn main() -> Result<(), Error> {
 
     println!("nx={} xmin={} xmax={} dx={}", nx, XMIN, XMAX, dx);
 
+    let pl = 1e5;
+    let ul = 0.;
+    let vl = 0.;
+    let phil = 0.;
+
+    let pr = 2e5;
+    let ur = 0.;
+    let vr = 0.;
+    let phir = 1.;
+
+    let sol = riemisot(
+        prim2bal([pl, ul, vl, phil]),
+        prim2bal([pr, ur, vr, phir]),
+        0.,
+    );
+    println!("sol={:?}", sol);
+    panic!();
     // vector of cell centers
     let xi: Vec<f64> = (0..nx + 2)
         .map(|i| i as f64 * dx - dx / 2. + XMIN)

@@ -111,7 +111,7 @@ We consider a two-fluid of density
 with the pressure law
 \begin_inset Formula 
 \[
-p=p(\rho)=c^{2}(\rho-(\varphi\rho_{A}+(1-\varphi)\rho_{W})).
+p=p(\rho)=p_{0}+c^{2}(\rho-(\varphi\rho_{A}+(1-\varphi)\rho_{W})).
 \]
 
 \end_inset
@@ -132,7 +132,7 @@ The physical parameters are the sound speed
  We can take for instance:
 \begin_inset Formula 
 \[
-c=20,\quad\rho_{A}=1,\quad\rho_{W}=1000.
+c=20,\quad\rho_{A}=1,\quad\rho_{W}=1000,\quad p_{0}=10^{5}.
 \]
 
 \end_inset
@@ -299,7 +299,7 @@ u & c^{2}\rho & 0 & 0\\
 where 
 \begin_inset Formula 
 \[
-\rho=\rho(p,\varphi)=\frac{p}{c^{2}}+\varphi\rho_{A}+(1-\varphi)\rho_{W}.
+\rho=\rho(p,\varphi)=\frac{p-p_{0}}{c^{2}}+\varphi\rho_{A}+(1-\varphi)\rho_{W}.
 \]
 
 \end_inset
@@ -311,7 +311,7 @@ Because
  the minimal pressure is given by
 \begin_inset Formula 
 \[
-p\geq-c^{2}\left(\varphi\rho_{A}+(1-\varphi)\rho_{W}\right).
+p\geq p_{0}-c^{2}\left(\varphi\rho_{A}+(1-\varphi)\rho_{W}\right).
 \]
 
 \end_inset
@@ -771,8 +771,8 @@ We express
 
 \begin_inset Formula 
 \begin{align*}
-u_{R}-\frac{p_{R}-p^{*}}{c^{2}}Z(\frac{p^{*}}{c^{2}}+\varphi_{R}\rho_{A}+(1-\varphi_{R})\rho_{W},\frac{p_{R}}{c^{2}}+\varphi_{R}\rho_{A}+(1-\varphi_{R})\rho_{W})\\
--u_{L}-\frac{p_{L}-p^{*}}{c^{2}}Z(\frac{p^{*}}{c^{2}}+\varphi_{L}\rho_{A}+(1-\varphi_{L})\rho_{W},\frac{p_{L}}{c^{2}}+\varphi_{L}\rho_{A}+(1-\varphi_{L})\rho_{W}) & =0.
+u_{R}-\frac{p_{R}-p^{*}}{c^{2}}Z(\frac{p^{*}-p_{0}}{c^{2}}+\varphi_{R}\rho_{A}+(1-\varphi_{R})\rho_{W},\frac{p_{R}-p_{0}}{c^{2}}+\varphi_{R}\rho_{A}+(1-\varphi_{R})\rho_{W})\\
+-u_{L}-\frac{p_{L}-p^{*}}{c^{2}}Z(\frac{p^{*}-p_{0}}{c^{2}}+\varphi_{L}\rho_{A}+(1-\varphi_{L})\rho_{W},\frac{p_{L}-p_{0}}{c^{2}}+\varphi_{L}\rho_{A}+(1-\varphi_{L})\rho_{W}) & =0.
 \end{align*}
 
 \end_inset
@@ -788,8 +788,8 @@ We simplify this equation by defining
 
 \begin_inset Formula 
 \begin{align*}
-u_{R}-\frac{p_{R}-p^{*}}{c^{2}}Z(\frac{p^{*}}{c^{2}}+\rho_{R}^{0},\frac{p_{R}}{c^{2}}+\rho_{R}^{0})\\
--u_{L}-\frac{p_{L}-p^{*}}{c^{2}}Z(\frac{p^{*}}{c^{2}}+\rho_{L}^{0},\frac{p_{L}}{c^{2}}+\rho_{L}^{0}) & =0.
+u_{R}-\frac{p_{R}-p^{*}}{c^{2}}Z(\frac{p^{*}-p_{0}}{c^{2}}+\rho_{R}^{0},\frac{p_{R}-p_{0}}{c^{2}}+\rho_{R}^{0})\\
+-u_{L}-\frac{p_{L}-p^{*}}{c^{2}}Z(\frac{p^{*}-p_{0}}{c^{2}}+\rho_{L}^{0},\frac{p_{L}-p_{0}}{c^{2}}+\rho_{L}^{0}) & =0.
 \end{align*}
 
 \end_inset
