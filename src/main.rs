@@ -9,10 +9,10 @@ use std::io::{Error, Write};
 use rayon::prelude::*;
 
 // majorant de la vitesse d'onde max
-const C: f64 = 5.;
+const C: f64 = 15.;
 
 // st venant: nombre de variables
-const M: usize = 2;
+const M: usize = 4;
 // burgers
 //const M: usize = 1;
 
@@ -52,8 +52,8 @@ fn dk(hl: f64, hr: f64, h: f64) -> f64 {
     -z(hl, h) - (h - hl) * dz(hl, h) - z(hr, h) - (h - hr) * dz(hr, h)
 }
 
-// riemann solver
-fn riemann(wl: [f64; M], wr: [f64; M], xi: f64) -> [f64; M] {
+// riemann solver st venant
+fn riemann(wl: [f64; 2], wr: [f64; 2], xi: f64) -> [f64; 2] {
     let hl = wl[0];
     let ul = wl[1] / hl;
     let hr = wr[0];
@@ -252,46 +252,44 @@ fn riemisot(wl: [f64; 4], wr: [f64; 4], xi: f64) -> [f64; 4] {
         }
     }
     let sqrt = f64::sqrt;
-    let ra = (ps - P0)/CSON/CSON + rphi(phil);
-    let rb = (ps - P0)/CSON/CSON + rphi(phir);
+    let ra = (ps - P0) / CSON / CSON + rphi(phil);
+    let rb = (ps - P0) / CSON / CSON + rphi(phir);
 
-    let us = ul + (rl-ra) * z_isot(ra,rl);
+    let us = ul + (rl - ra) * z_isot(ra, rl);
     //let us = ur - (rr-rb)*z_isot(rb,rr);
     // println!("us={} usp={}",us,usp);
-    
 
     let (lambda1m, lambda1p) = if ra < rl {
         (ul - CSON, us - CSON)
     } else {
-        let lambda = ul - CSON * sqrt(ra/rl);
+        let lambda = ul - CSON * sqrt(ra / rl);
         (lambda, lambda)
     };
     //println!("lm={} lp={}",lambda1m,lambda1p);
     let (lambda2m, lambda2p) = if rb < rr {
         (us + CSON, ur + CSON)
     } else {
-        let lambda = ur + CSON * sqrt(rb/rr);
-        (lambda, us/CSON*sqrt(rr/rb))
+        let lambda = ur + CSON * sqrt(rb / rr);
+        (lambda, us / CSON * sqrt(rr / rb))
     };
     // println!("lm={} lp={}",lambda2m,lambda2p);
 
-
-    let (p, u,v,phi) = if xi < lambda1m {
-        (pl, ul,vl,phil)
+    let (p, u, v, phi) = if xi < lambda1m {
+        (pl, ul, vl, phil)
     } else if xi < lambda1p {
         let u1 = xi + CSON;
-        let r1 = rl * ((ul-u1)/CSON).exp();
-         (pres(r1,phil), u1,vl,phil)
+        let r1 = rl * ((ul - u1) / CSON).exp();
+        (pres(r1, phil), u1, vl, phil)
     } else if xi < us {
-        (ps,us,vl,phil)
-    }else if xi < lambda2m {
-        (ps,us,vr,phir)
+        (ps, us, vl, phil)
+    } else if xi < lambda2m {
+        (ps, us, vr, phir)
     } else if xi < lambda2p {
-        let u2 = xi -CSON;
-        let r2 = rr*((u2-ur)/CSON).exp();
-        (pres(r2,phir),u2,vr,phir)
+        let u2 = xi - CSON;
+        let r2 = rr * ((u2 - ur) / CSON).exp();
+        (pres(r2, phir), u2, vr, phir)
     } else {
-        (pr,ur,vr,phir)
+        (pr, ur, vr, phir)
     };
     prim2bal([p, u, v, phi])
 }
@@ -320,18 +318,23 @@ fn riemisot(wl: [f64; 4], wr: [f64; 4], xi: f64) -> [f64; 4] {
 // }
 
 fn sol_exacte(x: f64, t: f64) -> [f64; M] {
-    let hl = 2.;
+    let pl = 1.1e5;
     let ul = 0.;
-    let hr = 0.5;
+    let vl = 0.;
+    let phil = 1.;
 
-    let sqrt = f64::sqrt;
+    let pr = 1e5;
+    let ur = 0.;
+    let vr = 0.;
+    let phir = 1.;
 
-    let ur = ul + 2. * sqrt(G) * (sqrt(hl) - sqrt(hr));
+    let yl = [pl, ul, vl, phil];
+    let yr = [pr, ur, vr, phir];
 
-    let wl = [hl, hl * ul];
-    let wr = [hr, hr * ur];
+    let wl = prim2bal(yl);
+    let wr = prim2bal(yr);
 
-    riemann(wl, wr, x / (t + 1e-12))
+    riemisot(wl, wr, x / (t + 1e-12))
 }
 
 // burgers
@@ -363,34 +366,44 @@ fn sol_exacte(x: f64, t: f64) -> [f64; M] {
 //     [u[0] * u[0] / 2.]
 // }
 
+// st venant
+// fn fluxphy(w: [f64; 2]) -> [f64; 2] {
+//     let h = w[0];
+//     let u = w[1] / h;
+//     [h * u, h * u * u + G * h * h / 2.]
+// }
+
+// bifluide isotherme
 fn fluxphy(w: [f64; M]) -> [f64; M] {
-    let h = w[0];
-    let u = w[1] / h;
-    [h * u, h * u * u + G * h * h / 2.]
+    let y = bal2prim(w);
+    let r = w[0];
+    let (p, u, v, phi) = (y[0], y[1], y[2], y[3]);
+    [r * u, r * u * u + p, r * u * v, r * u * phi]
 }
 
 // estimate of the time derivative from the space derivative
 // d_t w = -f'(w) d_x w
 fn jacob_dw(w: [f64; M], dw: [f64; M]) -> [f64; M] {
-    let h = w[0];
-    let u = w[1] / w[0];
+    let r = w[0];
+    let u = w[1] / r;
+    let v = w[2] / r;
+    let phi = w[3] / r;
 
-    let mut a = [[0.; M]; M];
-    a[0][0] = 0.;
-    a[0][1] = 1.;
-    a[1][0] = G * h - u * u;
-    a[1][1] = 2. * u;
+    let mut res = [0.; M];
 
-    [
-        -a[0][0] * dw[0] - a[0][1] * dw[1],
-        -a[1][0] * dw[0] - a[1][1] * dw[1],
-    ]
+    res[0] = dw[1];
+    res[1] = (-u * u + CSON * CSON * (1. + R_AIR * phi / r - R_WATER * phi / r)) * dw[0]
+        + 2. * u * dw[1]
+        + CSON * CSON * (-R_AIR / r + R_WATER / r) * dw[3];
+    res[2] = -u * v * dw[0] + u * dw[2] + v * dw[1];
+    res[3] = -phi * u * dw[0] + phi * dw[1] + u * dw[3];
+    res
 }
 
 fn fluxnum(wl: [f64; M], wr: [f64; M]) -> [f64; M] {
     // godunov
-    // let w = riemann(wl, wr, 0.);
-    // fluxphy(w)
+    let w = riemisot(wl, wr, 0.);
+    fluxphy(w)
     // rusanov
     // let hl = wl[0];
     // let hr = wr[0];
@@ -408,29 +421,29 @@ fn fluxnum(wl: [f64; M], wr: [f64; M]) -> [f64; M] {
     // flux
 
     // vfroe
-    let hl = wl[0];
-    let hr = wr[0];
-    let ul = wl[1] / hl;
-    let ur = wr[1] / hr;
+    // let hl = wl[0];
+    // let hr = wr[0];
+    // let ul = wl[1] / hl;
+    // let ur = wr[1] / hr;
 
-    let hb = (hl + hr) / 2.;
-    let ub = (ul + ur) / 2.;
+    // let hb = (hl + hr) / 2.;
+    // let ub = (ul + ur) / 2.;
 
-    let cb = (G * hb).sqrt();
+    // let cb = (G * hb).sqrt();
 
-    let lambda1 = ub - cb;
-    let lambda2 = ub + cb;
+    // let lambda1 = ub - cb;
+    // let lambda2 = ub + cb;
 
-    let ws = if lambda1 <= 0. && lambda2 <= 0. {
-        wr
-    } else if lambda1 >= 0. && lambda2 >= 0. {
-        wl
-    } else {
-        let hs = hb - 0.5 / cb * hb * (ur - ul);
-        let us = ub - 0.5 / cb * G * (hr - hl);
-        [hs, hs * us]
-    };
-    fluxphy(ws)
+    // let ws = if lambda1 <= 0. && lambda2 <= 0. {
+    //     wr
+    // } else if lambda1 >= 0. && lambda2 >= 0. {
+    //     wl
+    // } else {
+    //     let hs = hb - 0.5 / cb * hb * (ur - ul);
+    //     let us = ub - 0.5 / cb * G * (hr - hl);
+    //     [hs, hs * us]
+    // };
+    //fluxphy(ws)
 }
 
 fn minmod(a: f64, b: f64, c: f64) -> f64 {
@@ -444,7 +457,7 @@ fn minmod(a: f64, b: f64, c: f64) -> f64 {
 }
 
 fn main() -> Result<(), Error> {
-    let nx = 4000;
+    let nx = 1000;
 
     let dx = (XMAX - XMIN) / nx as f64;
 
@@ -465,35 +478,35 @@ fn main() -> Result<(), Error> {
         .map(|i| i as f64 * dx - dx / 2. + XMIN)
         .collect();
 
-    let t = 0.2;
-    let rplot: Vec<f64> = xi
-        .iter()
-        .map(|x| {
-            let sol = riemisot(
-                prim2bal([pl, ul, vl, phil]),
-                prim2bal([pr, ur, vr, phir]),
-                x / t,
-            );
-            sol[0]
-        })
-        .collect();
+    // let t = 0.2;
+    // let rplot: Vec<f64> = xi
+    //     .iter()
+    //     .map(|x| {
+    //         let sol = riemisot(
+    //             prim2bal([pl, ul, vl, phil]),
+    //             prim2bal([pr, ur, vr, phir]),
+    //             x / t,
+    //         );
+    //         sol[0]
+    //     })
+    //     .collect();
 
-    plot1d(&xi, &rplot);
+    // plot1d(&xi, &rplot);
 
-    panic!();
+    // panic!();
 
     // vector of solution at time n and n+1
     let mut wn: Vec<[f64; M]> = xi.iter().map(|x| sol_exacte(*x, 0.)).collect();
     let mut wnp1: Vec<[f64; M]> = wn.clone();
 
     // MUSCL space and time slopes
-    let mut sn = vec![[0., 0.]; nx + 2];
-    let mut rn = vec![[0., 0.]; nx + 2];
+    let mut sn = vec![[0.;M]; nx + 2];
+    let mut rn = vec![[0.;M]; nx + 2];
 
     let mut t = 0.;
-    let tmax = 1.;
+    let tmax = 0.3;
 
-    let cfl = 0.4;
+    let cfl = 0.2;
 
     let dt = dx * cfl / C;
 
