@@ -21,6 +21,13 @@ const XMAX: f64 = 10.;
 
 const G: f64 = 9.81;
 
+const R_AIR: f64 = 1.;
+const R_WATER: f64 = 1000.;
+const CSON: f64 = 10.;
+const P0: f64 = 1e5;
+
+
+
 fn z(a: f64, b: f64) -> f64 {
     let sqrt = f64::sqrt;
     if a > b {
@@ -108,11 +115,6 @@ fn riemann(wl: [f64; 2], wr: [f64; 2], xi: f64) -> [f64; 2] {
     };
     [h, h * u]
 }
-
-const R_AIR: f64 = 1.;
-const R_WATER: f64 = 1000.;
-const CSON: f64 = 10.;
-const P0: f64 = 1e5;
 
 fn rphi(phi: f64) -> f64 {
     phi * R_AIR + (1. - phi) * R_WATER
@@ -241,7 +243,7 @@ fn riemisot(wl: [f64; 4], wr: [f64; 4], xi: f64) -> [f64; 4] {
     let mut ps = pres(0.01, phil).max(pres(0.01, phir));
     let mut dp: f64 = 1.;
     let mut iter = 0;
-    while dp.abs() > 1e-10 {
+    while dp.abs() > 1e-12 && iter < 20 {
         let f = f_isot(pl, ul, vl, phil, pr, ur, vr, phir, ps);
         let df = df_isot(pl, ul, vl, phil, pr, ur, vr, phir, ps);
         dp = -f / df;
@@ -318,13 +320,13 @@ fn riemisot(wl: [f64; 4], wr: [f64; 4], xi: f64) -> [f64; 4] {
 // }
 
 fn sol_exacte(x: f64, t: f64) -> [f64; M] {
-    let pl = 1.1e5;
-    let ul = 0.;
+    let pl = 1e5;
+    let ul = 3.;
     let vl = 0.;
-    let phil = 1.;
+    let phil = 0.;
 
     let pr = 1e5;
-    let ur = 0.;
+    let ur = 3.;
     let vr = 0.;
     let phir = 1.;
 
@@ -509,7 +511,7 @@ fn main() -> Result<(), Error> {
                 let c = (wp[k] - wm[k]) / 2. / dx;
 
                 s[k] = minmod(a, b, c);
-                //s[k] = 0.;
+                s[k] = 0.;
             }
             *r = jacob_dw(*w, *s);
         });
