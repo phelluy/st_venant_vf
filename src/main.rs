@@ -457,43 +457,17 @@ fn minmod(a: f64, b: f64, c: f64) -> f64 {
 }
 
 fn main() -> Result<(), Error> {
-    let nx = 1000;
+    let nx = 400;
 
     let dx = (XMAX - XMIN) / nx as f64;
 
     println!("nx={} xmin={} xmax={} dx={}", nx, XMIN, XMAX, dx);
 
-    let pl = 1e5;
-    let ul = 0.;
-    let vl = 0.;
-    let phil = 1.;
-
-    let pr = 1e5;
-    let ur = 0.;
-    let vr = 0.;
-    let phir = 1.;
 
     // vector of cell centers
     let xi: Vec<f64> = (0..nx + 2)
         .map(|i| i as f64 * dx - dx / 2. + XMIN)
         .collect();
-
-    // let t = 0.2;
-    // let rplot: Vec<f64> = xi
-    //     .iter()
-    //     .map(|x| {
-    //         let sol = riemisot(
-    //             prim2bal([pl, ul, vl, phil]),
-    //             prim2bal([pr, ur, vr, phir]),
-    //             x / t,
-    //         );
-    //         sol[0]
-    //     })
-    //     .collect();
-
-    // plot1d(&xi, &rplot);
-
-    // panic!();
 
     // vector of solution at time n and n+1
     let mut wn: Vec<[f64; M]> = xi.iter().map(|x| sol_exacte(*x, 0.)).collect();
@@ -506,7 +480,7 @@ fn main() -> Result<(), Error> {
     let mut t = 0.;
     let tmax = 0.3;
 
-    let cfl = 0.4;
+    let cfl = 0.3;
 
     let mut iter_count = 0;
 
