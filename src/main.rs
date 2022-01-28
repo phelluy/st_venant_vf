@@ -266,7 +266,7 @@ fn riemisot(wl: [f64; 4], wr: [f64; 4], xi: f64) -> [f64; 4] {
         let lambda = ul - CSON * sqrt(ra/rl);
         (lambda, lambda)
     };
-    // println!("lm={} lp={}",lambda1m,lambda1p);
+    //println!("lm={} lp={}",lambda1m,lambda1p);
     let (lambda2m, lambda2p) = if rb < rr {
         (us + CSON, ur + CSON)
     } else {
@@ -451,21 +451,21 @@ fn main() -> Result<(), Error> {
     println!("nx={} xmin={} xmax={} dx={}", nx, XMIN, XMAX, dx);
 
     let pl = 1e5;
-    let ul = 100.;
+    let ul = 0.;
     let vl = 0.;
     let phil = 1.;
 
     let pr = 1e5;
     let ur = 0.;
     let vr = 0.;
-    let phir = 0.;
+    let phir = 1.;
 
     // vector of cell centers
     let xi: Vec<f64> = (0..nx + 2)
         .map(|i| i as f64 * dx - dx / 2. + XMIN)
         .collect();
 
-    let t = 0.1;
+    let t = 0.2;
     let rplot: Vec<f64> = xi
         .iter()
         .map(|x| {
