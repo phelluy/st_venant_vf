@@ -9,7 +9,7 @@ use std::io::{Error, Write};
 use rayon::prelude::*;
 
 // majorant de la vitesse d'onde max
-const C: f64 = 15.;
+//const C: f64 = 15.;
 
 // st venant: nombre de variables
 const M: usize = 4;
@@ -506,9 +506,7 @@ fn main() -> Result<(), Error> {
     let mut t = 0.;
     let tmax = 0.3;
 
-    let cfl = 0.2;
-
-    let dt = dx * cfl / C;
+    let cfl = 0.4;
 
     let mut iter_count = 0;
 
@@ -540,6 +538,15 @@ fn main() -> Result<(), Error> {
                 //s[k] = 0.;
             }
             *r = jacob_dw(*w, *s);
+        });
+
+        let mut dt = 1e5;
+        let mut umax = 0.;
+        // calcul du pas de temps
+        wn.iter().for_each(|w| {
+            let uloc = w[1]/w[0];
+            umax = (uloc + CSON).max(umax);
+            dt = (cfl * dx / (uloc + CSON)).min(dt);
         });
 
         // construction d'un itérateur imbriqué balayant tous
@@ -624,42 +631,65 @@ fn main() -> Result<(), Error> {
         wn.par_iter_mut()
             .zip(wnp1.par_iter())
             .for_each(|(wn, wnp1)| *wn = *wnp1);
+        //println!("t={} dt={} vmax={}",t,dt,umax);
     }
 
     println!("Ok, {} iterations, final t ={}", iter_count, t);
-    {
-        let meshfile = File::create("trans.dat")?;
-        let mut meshfile = BufWriter::new(meshfile); // create a buffer for faster writes...
 
-        for i in 0..nx + 2 {
-            let wex = sol_exacte(xi[i], t);
-            let w = wn[i];
-            let uex = wex[1] / wex[0];
-            let u = w[1] / w[0];
-            let hex = wex[0];
-            let h = w[0];
-            writeln!(meshfile, "{} {} {} {} {}", xi[i], h, hex, u, uex)?;
-        }
-    } // ensures that the file is closed...
+    println!("plot rho");
+    let ynum : Vec<f64> = wn.iter().map(|w| w[0]).collect();
+    let yex: Vec<f64> = xi.iter().map(|x| sol_exacte(*x,t)[0]).collect();
+    plot1d(&xi,&ynum, &yex);
 
-    use std::process::Command;
+    println!("plot u");
+    let ynum : Vec<f64> = wn.iter().map(|w| w[1]/w[0]).collect();
+    let yex: Vec<f64> = xi.iter().map(|x| {
+        let w = sol_exacte(*x,t);
+        w[1]/w[0]
+    }).collect();
+    plot1d(&xi,&ynum, &yex);
 
-    Command::new("gnuplot")
-        .arg("plotcom")
-        .status()
-        .expect("plot failed !");
+    println!("plot p");
+    let ynum : Vec<f64> = wn.iter().map(|w| bal2prim(*w)[0]).collect();
+    let yex: Vec<f64> = xi.iter().map(|x| {
+        let w = sol_exacte(*x,t);
+        bal2prim(w)[0]
+    }).collect();
+    plot1d(&xi,&ynum, &yex);
+
+    // {
+    //     let meshfile = File::create("trans.dat")?;
+    //     let mut meshfile = BufWriter::new(meshfile); // create a buffer for faster writes...
+
+    //     for i in 0..nx + 2 {
+    //         let wex = sol_exacte(xi[i], t);
+    //         let w = wn[i];
+    //         let uex = wex[1] / wex[0];
+    //         let u = w[1] / w[0];
+    //         let hex = wex[0];
+    //         let h = w[0];
+    //         writeln!(meshfile, "{} {} {} {} {}", xi[i], h, hex, u, uex)?;
+    //     }
+    // } // ensures that the file is closed...
+
+    // use std::process::Command;
+
+    // Command::new("gnuplot")
+    //     .arg("plotcom")
+    //     .status()
+    //     .expect("plot failed !");
 
     Ok(())
 }
 
-fn plot1d(x: &Vec<f64>, y: &Vec<f64>) {
+fn plot1d(x: &Vec<f64>, y: &Vec<f64>, z: &Vec<f64>) {
     let filename = "ploplo.dat";
     {
         let meshfile = File::create(filename).unwrap();
         let mut meshfile = BufWriter::new(meshfile); // create a buffer for faster writes...
 
-        x.iter().zip(y.iter()).for_each(|(x, y)| {
-            writeln!(meshfile, "{} {}", *x, *y).unwrap();
+        x.iter().zip(y.iter().zip(z.iter())).for_each(|(x, (y,z))| {
+            writeln!(meshfile, "{} {} {}", *x, *y, *z).unwrap();
         });
     }
 
