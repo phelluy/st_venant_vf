@@ -12,7 +12,7 @@ use rayon::prelude::*;
 //const C: f64 = 15.;
 
 // st venant: nombre de variables
-const M: usize = 4;
+const M: usize = 2;
 // burgers
 //const M: usize = 1;
 
@@ -243,14 +243,14 @@ fn riemisot(wl: [f64; 4], wr: [f64; 4], xi: f64) -> [f64; 4] {
     let mut ps = pres(0.01, phil).max(pres(0.01, phir));
     let mut dp: f64 = 1.;
     let mut iter = 0;
-    while dp.abs() > 1e-12 && iter < 20 {
+    while dp.abs()/P0 > 1e-12 && iter < 20 {
         let f = f_isot(pl, ul, vl, phil, pr, ur, vr, phir, ps);
         let df = df_isot(pl, ul, vl, phil, pr, ur, vr, phir, ps);
         dp = -f / df;
         ps += dp;
         iter += 1;
-        if iter > 20 {
-            panic!();
+        if iter == 20 {
+            println!("Slow convergence dp={} p={}",dp,ps);
         }
     }
     let sqrt = f64::sqrt;
@@ -320,23 +320,33 @@ fn riemisot(wl: [f64; 4], wr: [f64; 4], xi: f64) -> [f64; 4] {
 // }
 
 fn sol_exacte(x: f64, t: f64) -> [f64; M] {
-    let pl = 1e5;
-    let ul = 3.;
-    let vl = 0.;
-    let phil = 0.;
+    // let pl = 1.3e5;
+    // let ul = 0.;
+    // let vl = 0.;
+    // let phil = 1.;
 
-    let pr = 1e5;
-    let ur = 3.;
-    let vr = 0.;
-    let phir = 1.;
+    // let pr = 1e5;
+    // let ur = 0.;
+    // let vr = 0.;
+    // let phir = 0.;
 
-    let yl = [pl, ul, vl, phil];
-    let yr = [pr, ur, vr, phir];
+    // let yl = [pl, ul, vl, phil];
+    // let yr = [pr, ur, vr, phir];
 
-    let wl = prim2bal(yl);
-    let wr = prim2bal(yr);
+    // let wl = prim2bal(yl);
+    // let wr = prim2bal(yr);
 
-    riemisot(wl, wr, x / (t + 1e-12))
+    // riemisot(wl, wr, x / (t + 1e-12))
+    let hl = 2.;
+    let ul = 0.;
+
+    let hr = 1.;
+    let ur = 0.;
+
+    let wl = [hl,hl*ul];
+    let wr = [hr,hr*ur];
+
+    riemann(wl, wr, x / (t + 1e-12))
 }
 
 // burgers
@@ -369,50 +379,67 @@ fn sol_exacte(x: f64, t: f64) -> [f64; M] {
 // }
 
 // st venant
-// fn fluxphy(w: [f64; 2]) -> [f64; 2] {
-//     let h = w[0];
-//     let u = w[1] / h;
-//     [h * u, h * u * u + G * h * h / 2.]
-// }
-
-// bifluide isotherme
-fn fluxphy(w: [f64; M]) -> [f64; M] {
-    let y = bal2prim(w);
-    let r = w[0];
-    let (p, u, v, phi) = (y[0], y[1], y[2], y[3]);
-    [r * u, r * u * u + p, r * u * v, r * u * phi]
+fn fluxphy(w: [f64; 2]) -> [f64; 2] {
+    let h = w[0];
+    let u = w[1] / h;
+    [h * u, h * u * u + G * h * h / 2.]
 }
 
+// bifluide isotherme
+// fn fluxphy(w: [f64; M]) -> [f64; M] {
+//     let y = bal2prim(w);
+//     let r = w[0];
+//     let (p, u, v, phi) = (y[0], y[1], y[2], y[3]);
+//     [r * u, r * u * u + p, r * u * v, r * u * phi]
+// }
+
 // estimate of the time derivative from the space derivative
-// d_t w = -f'(w) d_x w
+// d_t w = -f'(w) d_x w isotherm
+// fn jacob_dw(w: [f64; M], dw: [f64; M]) -> [f64; M] {
+//     let r = w[0];
+//     let u = w[1] / r;
+//     let v = w[2] / r;
+//     let phi = w[3] / r;
+
+//     let mut res = [0.; M];
+
+//     res[0] = dw[1];
+//     res[1] = (-u * u + CSON * CSON * (1. + R_AIR * phi / r - R_WATER * phi / r)) * dw[0]
+//         + 2. * u * dw[1]
+//         + CSON * CSON * (-R_AIR / r + R_WATER / r) * dw[3];
+//     res[2] = -u * v * dw[0] + u * dw[2] + v * dw[1];
+//     res[3] = -phi * u * dw[0] + phi * dw[1] + u * dw[3];
+//     [-res[0],-res[1],-res[2],-res[3]]
+// }
+// st venant
 fn jacob_dw(w: [f64; M], dw: [f64; M]) -> [f64; M] {
-    let r = w[0];
-    let u = w[1] / r;
-    let v = w[2] / r;
-    let phi = w[3] / r;
+    let h = w[0];
+    let u = w[1] / w[0];
 
-    let mut res = [0.; M];
+    let mut a = [[0.; M]; M];
+    a[0][0] = 0.;
+    a[0][1] = 1.;
+    a[1][0] = G * h - u * u;
+    a[1][1] = 2. * u;
 
-    res[0] = dw[1];
-    res[1] = (-u * u + CSON * CSON * (1. + R_AIR * phi / r - R_WATER * phi / r)) * dw[0]
-        + 2. * u * dw[1]
-        + CSON * CSON * (-R_AIR / r + R_WATER / r) * dw[3];
-    res[2] = -u * v * dw[0] + u * dw[2] + v * dw[1];
-    res[3] = -phi * u * dw[0] + phi * dw[1] + u * dw[3];
-    res
+    [
+        -a[0][0] * dw[0] - a[0][1] * dw[1],
+        -a[1][0] * dw[0] - a[1][1] * dw[1],
+    ]
 }
 
 fn fluxnum(wl: [f64; M], wr: [f64; M]) -> [f64; M] {
     // godunov
-    let w = riemisot(wl, wr, 0.);
+    //let w = riemisot(wl, wr, 0.);
+    let w = riemann(wl, wr, 0.);
     fluxphy(w)
     // rusanov
-    // let hl = wl[0];
-    // let hr = wr[0];
-    // let ul = wl[1] / hl;
-    // let ur = wr[1] / hr;
+    // let rl = wl[0];
+    // let rr = wr[0];
+    // let ul = wl[1] / rl;
+    // let ur = wr[1] / rr;
 
-    // let lambda = f64::max(ul.abs() + (G * hl).sqrt(), ur.abs() + (G * hr).sqrt());
+    // let lambda = f64::max(ul.abs() + CSON, ur.abs() + CSON);
     // let fl = fluxphy(wl);
     // let fr = fluxphy(wr);
 
@@ -420,7 +447,7 @@ fn fluxnum(wl: [f64; M], wr: [f64; M]) -> [f64; M] {
     // for i in 0..M {
     //     flux[i] = 0.5 * (fl[i] + fr[i]) - 0.5 * lambda * (wr[i] - wl[i]);
     // }
-    // flux
+    //flux
 
     // vfroe
     // let hl = wl[0];
@@ -480,9 +507,9 @@ fn main() -> Result<(), Error> {
     let mut rn = vec![[0.;M]; nx + 2];
 
     let mut t = 0.;
-    let tmax = 0.3;
+    let tmax = 1.;
 
-    let cfl = 0.3;
+    let cfl = 0.4;
 
     let mut iter_count = 0;
 
@@ -511,7 +538,7 @@ fn main() -> Result<(), Error> {
                 let c = (wp[k] - wm[k]) / 2. / dx;
 
                 s[k] = minmod(a, b, c);
-                s[k] = 0.;
+                //s[k] = 0.;
             }
             *r = jacob_dw(*w, *s);
         });
@@ -520,8 +547,9 @@ fn main() -> Result<(), Error> {
         let mut umax = 0.;
         // calcul du pas de temps
         wn.iter().for_each(|w| {
-            let uloc = w[1]/w[0];
-            umax = (uloc + CSON).max(umax);
+            let hloc = w[0];
+            let uloc = (w[1]/w[0]).abs();
+            umax = (uloc + (G*hloc).sqrt()).max(umax);
             dt = (cfl * dx / (uloc + CSON)).min(dt);
         });
 
@@ -607,7 +635,7 @@ fn main() -> Result<(), Error> {
         wn.par_iter_mut()
             .zip(wnp1.par_iter())
             .for_each(|(wn, wnp1)| *wn = *wnp1);
-        //println!("t={} dt={} vmax={}",t,dt,umax);
+        println!("t={} dt={} vmax={}",t,dt,umax);
     }
 
     println!("Ok, {} iterations, final t ={}", iter_count, t);
@@ -625,13 +653,13 @@ fn main() -> Result<(), Error> {
     }).collect();
     plot1d(&xi,&ynum, &yex);
 
-    println!("plot p");
-    let ynum : Vec<f64> = wn.iter().map(|w| bal2prim(*w)[0]).collect();
-    let yex: Vec<f64> = xi.iter().map(|x| {
-        let w = sol_exacte(*x,t);
-        bal2prim(w)[0]
-    }).collect();
-    plot1d(&xi,&ynum, &yex);
+    // println!("plot p");
+    // let ynum : Vec<f64> = wn.iter().map(|w| bal2prim(*w)[0]).collect();
+    // let yex: Vec<f64> = xi.iter().map(|x| {
+    //     let w = sol_exacte(*x,t);
+    //     bal2prim(w)[0]
+    // }).collect();
+    // plot1d(&xi,&ynum, &yex);
 
     // {
     //     let meshfile = File::create("trans.dat")?;
